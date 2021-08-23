@@ -5,6 +5,7 @@
 #include<stdbool.h>
 
 #include"container.h"
+#include"vector.h"
 
 struct rtk_color_t
 {
