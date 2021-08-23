@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<stdint.h>
 #include<math.h>
+#include<time.h>
 
 enum 
 {
@@ -11,11 +12,12 @@ enum
 
 void time_call(int id)
 {
+    static clock_t start=0;
     static int offset=0;
     beginPaint();
     clearDevice();int s=rand()%3;
-    for(int y=0;y<120*2;y++)
-        for(int x=0;x<190*2;x++)
+    for(int y=0;y<300;y++)
+        for(int x=0;x<400;x++)
         {
             if(sin(0.1*(x-offset))+sin(0.1*(y))<0.01)
             {
@@ -33,12 +35,15 @@ void time_call(int id)
         }
     endPaint();
     offset+=20;
+    printf("time=%d\n",clock()-start);
+    start=clock();
 }
 
 int Setup()
 {
     initWindow("fuck",-1,-1,190*2,120*2);
     registerTimerEvent(time_call);
-    startTimer(1,1000/60);
+    startTimer(1,30);CLOCKS_PER_SEC;
+    
     return 0;
 }
