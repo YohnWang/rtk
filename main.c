@@ -15,7 +15,9 @@ void time_call(int id)
     static clock_t start=0;
     static int offset=0;
     beginPaint();
-    clearDevice();int s=rand()%3;
+    clearDevice();
+    int s=1;
+    int t=rand()%2;
     for(int y=0;y<300;y++)
         for(int x=0;x<400;x++)
         {
@@ -34,7 +36,10 @@ void time_call(int id)
             
         }
     endPaint();
-    offset+=20;
+    if(t)
+        offset-=1;
+    else 
+        offset+=1;
     printf("time=%d\n",clock()-start);
     start=clock();
 }

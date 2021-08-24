@@ -56,7 +56,7 @@ typedef struct rtk_board_t rtk_board_t;
 struct rtk_layer_t
 {
     rtk_board_t board;
-    rtk_container_t *list;
+    vector container_vector;
 };
 typedef struct rtk_layer_t rtk_layer_t;
 
