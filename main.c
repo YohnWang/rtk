@@ -4,6 +4,10 @@
 #include<math.h>
 #include<time.h>
 
+#include"render.h"
+
+rtk_layer_t layer;
+
 enum 
 {
     width=360,
@@ -18,8 +22,8 @@ void time_call(int id)
     clearDevice();
     int s=1;
     int t=rand()%2;
-    for(int y=0;y<300;y++)
-        for(int x=0;x<400;x++)
+    for(int y=0;y<200;y++)
+        for(int x=0;x<300;x++)
         {
             if(sin(0.1*(x-offset))+sin(0.1*(y))<0.01)
             {
@@ -40,15 +44,16 @@ void time_call(int id)
         offset-=1;
     else 
         offset+=1;
-    printf("time=%d\n",clock()-start);
+    printf("time=%ld\n",clock()-start);
     start=clock();
 }
 
 int Setup()
 {
-    initWindow("fuck",-1,-1,190*2,120*2);
+    initWindow("fuck",-1,-1,300,200);
+    rtk_layer_init(&layer,200,100);
     registerTimerEvent(time_call);
-    startTimer(1,30);CLOCKS_PER_SEC;
+    startTimer(1,20);CLOCKS_PER_SEC;
     
     return 0;
 }

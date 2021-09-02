@@ -3,7 +3,7 @@ CC=gcc
 
 srcs=$(wildcard *.c)
 objs=$(srcs:%.c=%.o)
-cflags=-Wall -include rtkdebug.h -DRTK_DEBUG
+cflags=-Wall -Wextra -Wno-unused -include rtkdebug.h -DRTK_DEBUG
 ldflags=-lwinmm -lmsimg32 -lkernel32 -luser32 -lgdi32 -lole32 -loleaut32 -luuid
 
 main.exe: $(objs)

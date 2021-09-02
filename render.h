@@ -7,6 +7,18 @@
 #include"container.h"
 #include"vector.h"
 
+// 统一初始化结构体
+struct rtk_init_t
+{
+    int width;
+    int height;
+    double width_scale;
+    double height_scale;
+    char *name;
+    
+};
+typedef struct rtk_init_t rtk_init_t;
+
 struct rtk_color_t
 {
     uint8_t r;
@@ -49,6 +61,7 @@ struct rtk_board_t
 {
     int width;
     int height;
+    bool disable;
     rtk_pixel_t *image;
 };
 typedef struct rtk_board_t rtk_board_t;
@@ -56,10 +69,11 @@ typedef struct rtk_board_t rtk_board_t;
 struct rtk_layer_t
 {
     rtk_board_t board;
-    vector container_vector;
+    vector containers;
 };
 typedef struct rtk_layer_t rtk_layer_t;
 
+int rtk_layer_init(rtk_layer_t *layer,int width,int height);
 
 #ifdef RTK_DEBUG
 extern rtk_pixel_t* rtk_board_pixel_at(rtk_board_t *board,int x,int y);
@@ -70,5 +84,14 @@ static inline rtk_pixel_t* rtk_board_pixel_at(rtk_board_t *board,int x,int y)
 }
 #endif
 
+struct rtk_render_t
+{
+    rtk_board_t view;
+    vector layers;
+    vector view_stack;
+};
+typedef struct rtk_render_t rtk_render_t;
+
+int rtk_render_init(rtk_render_t *render,int width,int height);
 
 #endif
