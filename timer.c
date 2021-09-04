@@ -1,18 +1,17 @@
-#ifndef VECTOR_H
-#define VECTOR_H
-
 #include<stdlib.h>
 #include<string.h>
 #include<stddef.h>
+#include<pthread.h>
+
+#include"timer.h"
 
 //data structure of vector
-typedef void* rtk_generic_t;
 
 struct vector
 {
     ssize_t size;
     ssize_t capacity;
-    rtk_generic_t *a;
+    rtk_timer_t *a;
 };
 typedef struct vector vector;
 
@@ -36,13 +35,13 @@ static void vector_recapacity(vector *v,ssize_t new_cap)
     //only when new_cap>cap can change capacity
     if(new_cap>cap)
     {
-        rtk_generic_t *p=(rtk_generic_t*)malloc(new_cap*sizeof(rtk_generic_t));
+        rtk_timer_t *p=(rtk_timer_t*)malloc(new_cap*sizeof(rtk_timer_t));
         if(p==NULL)
         {
             rtk_debug("vector memory alloc failed\n");
             exit(1);
         }
-        memcpy(p,v->a,size*sizeof(rtk_generic_t));
+        memcpy(p,v->a,size*sizeof(rtk_timer_t));
         free(v->a);
         v->capacity=new_cap;
         v->a=p;
@@ -104,7 +103,7 @@ static inline void vector_clear(vector *v)
 }
 
 //using
-static inline void vector_push_back(vector *v,rtk_generic_t e)
+static inline void vector_push_back(vector *v,rtk_timer_t e)
 {
     ssize_t size=vector_size(v);
     ssize_t cap =vector_capacity(v);
@@ -119,14 +118,14 @@ static inline void vector_pop_back(vector *v)
         v->size--;
 }
 
-static inline rtk_generic_t* vector_at(vector *v,ssize_t index)
+static inline rtk_timer_t* vector_at(vector *v,ssize_t index)
 {
     rtk_assert(index>=0 && index<vector_size(v));
 
     return &v->a[index];
 }
 
-static inline void vector_insert(vector *v,ssize_t index,rtk_generic_t e)
+static inline void vector_insert(vector *v,ssize_t index,rtk_timer_t e)
 {
     rtk_assert(index>=0 && index<vector_size(v));
 
@@ -144,27 +143,27 @@ static inline void vector_erase(vector *v,ssize_t index)
     vector_pop_back(v);
 }
 
-static inline rtk_generic_t* vector_back(vector *v)
+static inline rtk_timer_t* vector_back(vector *v)
 {
     return vector_at(v,vector_size(v)-1);
 }
 
-static inline rtk_generic_t* vector_front(vector *v)
+static inline rtk_timer_t* vector_front(vector *v)
 {
     return vector_at(v,0);
 }
 
-static inline rtk_generic_t* vector_begin(vector *v)
+static inline rtk_timer_t* vector_begin(vector *v)
 {
     return &v->a[0];
 }
 
-static inline rtk_generic_t* vector_end(vector *v)
+static inline rtk_timer_t* vector_end(vector *v)
 {
     return &v->a[vector_size(v)];
 }
 
-static inline rtk_generic_t* vector_data(vector *v)
+static inline rtk_timer_t* vector_data(vector *v)
 {
     return vector_begin(v);
 }
@@ -174,7 +173,7 @@ static inline void vector_assign(vector *t,vector *v)
 {
     vector_del(t);
     vector_resize(t,vector_size(v));
-    memcpy(vector_data(t),vector_data(v),vector_size(t)*sizeof(rtk_generic_t));
+    memcpy(vector_data(t),vector_data(v),vector_size(t)*sizeof(rtk_timer_t));
 }
 
 // 拷贝赋值
@@ -191,4 +190,57 @@ static inline void vector_move(vector *t,vector *v)
     *v=p;
 }
 
-#endif
+static vector timer_list={};
+static pthread_mutex_t mutex= PTHREAD_MUTEX_INITIALIZER;
+
+static inline void rtk_timer_critical_in(void)
+{
+    pthread_mutex_lock(&mutex);
+}
+
+static inline void rtk_timer_critical_out(void)
+{
+    pthread_mutex_unlock(&mutex);
+}
+
+void rtk_timer_register(int (*timer_call)(void), rtk_clock_t waiting_time)
+{
+    rtk_timer_t timer={
+                .register_time=rtk_get_clock(),
+                .waiting_time=waiting_time,
+                .timer_call=timer_call
+                };
+    rtk_timer_critical_in();
+    vector_push_back(&timer_list,timer);
+    rtk_timer_critical_out();
+}
+
+static void* rtk_timer_thread(void *args)
+{
+    for(;;)
+    {
+        rtk_timer_critical_in();
+        rtk_clock_t current_time=rtk_get_clock();
+        for(ssize_t i=0;i<vector_size(&timer_list);i++)
+        {
+            rtk_clock_t overtime = vector_at(&timer_list,i)->register_time + vector_at(&timer_list,i)->waiting_time;
+            if(current_time >= overtime)
+            {
+                int is_repeat=vector_at(&timer_list,i)->timer_call();
+                if(is_repeat == 0)
+                    vector_erase(&timer_list,i);
+                else 
+                    vector_at(&timer_list,i)->register_time=current_time;
+            }
+        }
+        rtk_timer_critical_out();
+        rtk_timer_sleep(100);
+    }
+    return NULL;
+}
+
+void rtk_timer_init(void)
+{
+    pthread_t t;
+    pthread_create(&t,NULL,rtk_timer_thread,NULL);
+}

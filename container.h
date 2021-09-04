@@ -4,6 +4,7 @@
 #include"control.h"
 
 typedef struct rtk_layer_t rtk_layer_t;
+//typedef struct rtk_control_t rtk_control_t;
 
 //容器的基类
 struct rtk_container_t

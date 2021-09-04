@@ -2,6 +2,7 @@
 #define RTKDEBUG_H
 
 #include<stdio.h>
+#include<stdbool.h>
 
 // 如果定义了调试选项，那么rtk的调试项也应该开启
 #if defined(DEBUG) || defined(_DEBUG)

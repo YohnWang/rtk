@@ -1,7 +1,7 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-#include"render.h"
+#include"vector.h"
 
 struct rtk_control_t
 {

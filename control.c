@@ -1,8 +1,8 @@
 #include"control.h"
 
-static void control_respond(const char *event_name)
+static int control_respond(const char *event_name)
 {
-
+    return 0;
 }
 
 int rtk_control_init(rtk_control_t *control,rtk_control_attr_t attr)
