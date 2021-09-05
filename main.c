@@ -5,6 +5,7 @@
 #include<time.h>
 
 #include"render.h"
+#include"timer.h"
 
 rtk_layer_t layer;
 
@@ -44,12 +45,41 @@ void time_call(int id)
         offset-=1;
     else 
         offset+=1;
-    printf("time=%ld\n",clock()-start);
+    //printf("time=%ld\n",clock()-start);
     start=clock();
 }
+// #include"gvector.h"
+
+// vector_generic(vector(int))
+// vector_func_register(int)
 
 int Setup()
 {
+
+    rtk_timer_init();
+    int i=0;
+    int print1()
+    {
+        static int i=0;
+        printf("fuck you %d\n",i++);
+        return 0;
+    }
+    int print2()
+    {
+        static int i=0;
+        printf("shit you %d\n",i++);
+        if(i>3)
+            return 0;
+        return 1;
+    }
+    for(int i=0;i<100;i++)
+        rtk_timer_register(print1,1000*(rand()%100));
+    
+    // for(;;)
+    // {
+    //     i++;
+    //     Sleep(500);
+    // }
     initWindow("fuck",-1,-1,300,200);
     rtk_layer_init(&layer,200,100);
     registerTimerEvent(time_call);

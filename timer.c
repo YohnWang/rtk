@@ -5,7 +5,7 @@
 
 #include"timer.h"
 
-//data structure of vector
+// 数据结构 动态数组 -- beign
 
 struct vector
 {
@@ -190,7 +190,73 @@ static inline void vector_move(vector *t,vector *v)
     *v=p;
 }
 
-static vector timer_list={};
+// 数据结构 动态数组 -- end
+
+// 数据结构 最小堆 -- begin
+
+static inline ssize_t left(ssize_t i)
+{
+    return (i+1)*2-1;
+}
+
+static inline ssize_t right(ssize_t i)
+{
+    return (i+1)*2;
+}
+
+static inline ssize_t parent(ssize_t i)
+{
+    return (i-1)/2;
+}
+
+static void heapify(rtk_timer_t a[],ssize_t n,ssize_t i)
+{
+    ssize_t l=left(i);
+    ssize_t r=right(i);
+    ssize_t smallest=i;
+    if(l<n && a[smallest].executable_time>a[l].executable_time)
+        smallest=l;
+    if(r<n && a[smallest].executable_time>a[r].executable_time)
+        smallest=r;
+    if(smallest!=i)
+    {
+        rtk_timer_t tmp=a[i];
+        a[i]=a[smallest];
+        a[smallest]=tmp;
+        heapify(a,n,smallest);
+    }
+}
+
+static void push_heap(rtk_timer_t a[],ssize_t n,ssize_t i)
+{
+    for(ssize_t j=parent(i);j<i;j=parent(i))
+    {
+        if(a[i].executable_time<a[j].executable_time)
+        {
+            rtk_timer_t r=a[j];
+            a[j]=a[i];
+            a[i]=r;
+            i=j;
+        }
+        else 
+        {
+            break;
+        }
+    }
+}
+
+static void pop_heap(rtk_timer_t a[],ssize_t n,ssize_t i)
+{
+    rtk_timer_t r=a[0];
+    a[0]=a[n-1];
+    heapify(a,n-1,0);
+    a[n-1]=r;
+}
+
+// 数据结构 最小堆 -- end
+
+
+// 移植接口 -- begin
 static pthread_mutex_t mutex= PTHREAD_MUTEX_INITIALIZER;
 
 static inline void rtk_timer_critical_in(void)
@@ -203,15 +269,20 @@ static inline void rtk_timer_critical_out(void)
     pthread_mutex_unlock(&mutex);
 }
 
+// 移植接口 -- end
+
+static vector timer_list={};
 void rtk_timer_register(int (*timer_call)(void), rtk_clock_t waiting_time)
 {
     rtk_timer_t timer={
-                .register_time=rtk_get_clock(),
+                .executable_time=rtk_get_clock()+waiting_time,
                 .waiting_time=waiting_time,
                 .timer_call=timer_call
                 };
     rtk_timer_critical_in();
     vector_push_back(&timer_list,timer);
+    push_heap(vector_data(&timer_list),vector_size(&timer_list),vector_size(&timer_list)-1);
+    rtk_debug("1\n");
     rtk_timer_critical_out();
 }
 
@@ -221,16 +292,24 @@ static void* rtk_timer_thread(void *args)
     {
         rtk_timer_critical_in();
         rtk_clock_t current_time=rtk_get_clock();
-        for(ssize_t i=0;i<vector_size(&timer_list);i++)
+        rtk_debug("6\n");
+        while(vector_size(&timer_list)>0 && current_time>=vector_at(&timer_list,0)->executable_time)
         {
-            rtk_clock_t overtime = vector_at(&timer_list,i)->register_time + vector_at(&timer_list,i)->waiting_time;
-            if(current_time >= overtime)
+            int is_repeat=vector_at(&timer_list,0)->timer_call();
+            if(is_repeat == 0)
             {
-                int is_repeat=vector_at(&timer_list,i)->timer_call();
-                if(is_repeat == 0)
-                    vector_erase(&timer_list,i);
-                else 
-                    vector_at(&timer_list,i)->register_time=current_time;
+                rtk_debug("4\n");
+                pop_heap(vector_data(&timer_list),vector_size(&timer_list),0);
+                vector_pop_back(&timer_list);
+                rtk_debug("5\n");
+            }
+            else
+            {
+                rtk_debug("2\n");
+                vector_at(&timer_list,0)->executable_time=current_time+vector_at(&timer_list,0)->waiting_time;
+                pop_heap(vector_data(&timer_list),vector_size(&timer_list),0);
+                push_heap(vector_data(&timer_list),vector_size(&timer_list),vector_size(&timer_list)-1);
+                rtk_debug("3\n");
             }
         }
         rtk_timer_critical_out();
