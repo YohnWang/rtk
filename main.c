@@ -52,28 +52,28 @@ void time_call(int id)
 
 // vector_generic(vector(int))
 // vector_func_register(int)
-
+int print1()
+{
+    static int i=0;
+    printf("fuck you %d\n",i++);
+    return 0;
+}
+int print2()
+{
+    static int i=0;
+    printf("shit you %d\n",i++);
+    if(i>3)
+        return 0;
+    return 1;
+}
 int Setup()
 {
 
     rtk_timer_init();
     int i=0;
-    int print1()
-    {
-        static int i=0;
-        printf("fuck you %d\n",i++);
-        return 0;
-    }
-    int print2()
-    {
-        static int i=0;
-        printf("shit you %d\n",i++);
-        if(i>3)
-            return 0;
-        return 1;
-    }
-    for(int i=0;i<100;i++)
-        rtk_timer_register(print1,1000*(rand()%100));
+
+    for(int i=0;i<200;i++)
+        rtk_timer_register(print1,1000*(rand()%10));
     
     // for(;;)
     // {

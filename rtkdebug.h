@@ -16,9 +16,9 @@
 #ifdef  RTK_DEBUG
 #define rtk_debug(format,...) fprintf(stderr,"[file:%s][line:%d]"format,__FILE__,__LINE__,##__VA_ARGS__)
 #define rtk_assert(condition) ({ if((condition)==false) {rtk_debug("assert error :%s\n",#condition);exit(1);} })
-#elif
-#define rtk_debug(format,...) ()
-#define rtk_assert() ()
+#else
+#define rtk_debug(format,...)  
+#define rtk_assert(condition)  
 #endif
 
 

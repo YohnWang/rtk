@@ -196,17 +196,20 @@ static inline void vector_move(vector *t,vector *v)
 
 static inline ssize_t left(ssize_t i)
 {
-    return (i+1)*2-1;
+    //return (i+1)*2-1;
+    return (i<<1)+1;
 }
 
 static inline ssize_t right(ssize_t i)
 {
-    return (i+1)*2;
+    //return (i+1)*2;
+    return (i<<1)+2;
 }
 
 static inline ssize_t parent(ssize_t i)
 {
     return (i-1)/2;
+    //return (i-1)>>1;
 }
 
 static void heapify(rtk_timer_t a[],ssize_t n,ssize_t i)
@@ -229,7 +232,7 @@ static void heapify(rtk_timer_t a[],ssize_t n,ssize_t i)
 
 static void push_heap(rtk_timer_t a[],ssize_t n,ssize_t i)
 {
-    for(ssize_t j=parent(i);j<i;j=parent(i))
+    for(ssize_t j=parent(i);j!=i;j=parent(i))
     {
         if(a[i].executable_time<a[j].executable_time)
         {
@@ -282,7 +285,6 @@ void rtk_timer_register(int (*timer_call)(void), rtk_clock_t waiting_time)
     rtk_timer_critical_in();
     vector_push_back(&timer_list,timer);
     push_heap(vector_data(&timer_list),vector_size(&timer_list),vector_size(&timer_list)-1);
-    rtk_debug("1\n");
     rtk_timer_critical_out();
 }
 
@@ -292,24 +294,19 @@ static void* rtk_timer_thread(void *args)
     {
         rtk_timer_critical_in();
         rtk_clock_t current_time=rtk_get_clock();
-        rtk_debug("6\n");
         while(vector_size(&timer_list)>0 && current_time>=vector_at(&timer_list,0)->executable_time)
         {
             int is_repeat=vector_at(&timer_list,0)->timer_call();
             if(is_repeat == 0)
             {
-                rtk_debug("4\n");
                 pop_heap(vector_data(&timer_list),vector_size(&timer_list),0);
                 vector_pop_back(&timer_list);
-                rtk_debug("5\n");
             }
             else
             {
-                rtk_debug("2\n");
                 vector_at(&timer_list,0)->executable_time=current_time+vector_at(&timer_list,0)->waiting_time;
                 pop_heap(vector_data(&timer_list),vector_size(&timer_list),0);
                 push_heap(vector_data(&timer_list),vector_size(&timer_list),vector_size(&timer_list)-1);
-                rtk_debug("3\n");
             }
         }
         rtk_timer_critical_out();
