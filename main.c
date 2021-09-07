@@ -48,38 +48,18 @@ void time_call(int id)
     //printf("time=%ld\n",clock()-start);
     start=clock();
 }
-// #include"gvector.h"
 
-// vector_generic(vector(int))
-// vector_func_register(int)
-int print1()
+int print()
 {
     static int i=0;
-    printf("fuck you %d\n",i++);
+    printf("hello world %d\n",i++);
     return 0;
-}
-int print2()
-{
-    static int i=0;
-    printf("shit you %d\n",i++);
-    if(i>3)
-        return 0;
-    return 1;
 }
 int Setup()
 {
-
-    rtk_timer_init();
-    int i=0;
-
-    for(int i=0;i<200;i++)
-        rtk_timer_register(print1,1000*(rand()%10));
-    
-    // for(;;)
-    // {
-    //     i++;
-    //     Sleep(500);
-    // }
+    for(int i=0;i<10;i++)
+        rtk_timer_register(print,100*i);
+        
     initWindow("fuck",-1,-1,300,200);
     rtk_layer_init(&layer,200,100);
     registerTimerEvent(time_call);

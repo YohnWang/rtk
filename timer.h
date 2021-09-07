@@ -30,6 +30,5 @@ struct rtk_timer_t
 typedef struct rtk_timer_t rtk_timer_t;
 
 void rtk_timer_register(int (*timer_call)(void), rtk_clock_t waiting_time);
-void rtk_timer_init(void);
 
 #endif

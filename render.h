@@ -75,14 +75,14 @@ typedef struct rtk_layer_t rtk_layer_t;
 
 int rtk_layer_init(rtk_layer_t *layer,int width,int height);
 
-#ifdef RTK_DEBUG
-extern rtk_pixel_t* rtk_board_pixel_at(rtk_board_t *board,int x,int y);
-#else
+
 static inline rtk_pixel_t* rtk_board_pixel_at(rtk_board_t *board,int x,int y)
 {
-        return &board->image[y*board->width + x];
+    rtk_assert(x>=0 && x<board->width && y>=0 && y<board->height,"fuck");
+
+    return &board->image[y*board->width + x];
 }
-#endif
+
 
 struct rtk_render_t
 {

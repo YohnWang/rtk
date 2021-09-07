@@ -315,7 +315,7 @@ static void* rtk_timer_thread(void *args)
     return NULL;
 }
 
-void rtk_timer_init(void)
+static void __attribute__((constructor)) rtk_timer_init(void) 
 {
     pthread_t t;
     pthread_create(&t,NULL,rtk_timer_thread,NULL);
